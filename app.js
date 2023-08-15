@@ -156,6 +156,21 @@ function getUpdatesSumNode(callback) {
   });
 }
 
+// function getUpdatesCoordinate(node, callback) {
+//   const query = `SELECT * FROM coordinate WHERE node = $1`;
+//   const values = [node];
+
+//   client.query(query, values, (err, res) => {
+//     if (err) {
+//       console.error(err);
+//       callback([]);
+//     } else {
+//       const rows = res.rows;
+//       callback(rows);
+//     }
+//   });
+// }
+
 function getUpdatesCoordinate(node, callback) {
   const query = `SELECT * FROM coordinate WHERE node = $1`;
   const values = [node];
@@ -166,6 +181,10 @@ function getUpdatesCoordinate(node, callback) {
       callback([]);
     } else {
       const rows = res.rows;
+      if(rows==null){
+        console.log("empty");
+      }
+      console.log(rows)
       callback(rows);
     }
   });
