@@ -132,6 +132,7 @@ function getUpdatesSumNode(callback) {
       callback([]);
     } else {
       const rows = res.rows;
+      console.log(rows);
       callback(rows);
     }
   });
@@ -213,3 +214,5 @@ const port = process.env.PORT || 5001;
 app.listen(port, () => {
   console.log(`App is listening on port ${port}`);
 });
+
+
