@@ -123,6 +123,21 @@ function getUpdatesCentral(callback) {
   });
 }
 
+// function getUpdatesSumNode(callback) {
+//   const query = `SELECT * FROM sum_node`;
+
+//   client.query(query, (err, res) => {
+//     if (err) {
+//       console.error(err);
+//       callback([]);
+//     } else {
+//       const rows = res.rows;
+//       console.log(rows);
+//       callback(rows);
+//     }
+//   });
+// }
+
 function getUpdatesSumNode(callback) {
   const query = `SELECT * FROM sum_node`;
 
@@ -132,7 +147,10 @@ function getUpdatesSumNode(callback) {
       callback([]);
     } else {
       const rows = res.rows;
-      console.log(rows);
+      if(rows==null){
+        console.log("empty");
+      }
+      console.log(rows)
       callback(rows);
     }
   });
