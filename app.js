@@ -172,6 +172,7 @@ function getUpdatesSumNode(callback) {
 // }
 
 function getUpdatesCoordinate(node, callback) {
+  console.log("cekkkk");
   const query = `SELECT * FROM coordinate WHERE node = $1`;
   const values = [node];
 
