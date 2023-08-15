@@ -148,7 +148,7 @@ function getUpdatesSumNode(callback) {
     } else {
       const rows = res.rows;
       if(rows==null){
-        console.log("empty");
+        console.error("cekkk");
       }
       console.log(rows)
       callback(rows);
@@ -172,7 +172,7 @@ function getUpdatesSumNode(callback) {
 // }
 
 function getUpdatesCoordinate(node, callback) {
-  console.log("cekkkk");
+  console.error("cekkk");
   const query = `SELECT * FROM coordinate WHERE node = $1`;
   const values = [node];
 
@@ -183,9 +183,9 @@ function getUpdatesCoordinate(node, callback) {
     } else {
       const rows = res.rows;
       if(rows==null){
-        console.log("empty");
+        console.error("mt");
       }
-      console.log(rows)
+      console.error(rows)
       callback(rows);
     }
   });
