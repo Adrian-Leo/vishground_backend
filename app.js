@@ -5,6 +5,7 @@ import morgan from "morgan";
 import helmet from "helmet";
 import xss from "xss-clean";
 import body_parser from "body-parser";
+import auth from "./routes/auth.js"
 import hello from "./routes/hello.js";
 import coor from "./routes/coordinate.js"
 import node from "./routes/node.js"
@@ -38,6 +39,7 @@ app.use(cors());
 app.get("/", (req, res) => {
   res.send("WELCOME TO VISHGROUND API🚀");
 });
+app.use("/auth", auth)
 app.use("/hello", hello)
 app.use("/coor", coor)
 app.use("/node", node)
