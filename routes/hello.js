@@ -1,10 +1,10 @@
 import { Router } from "express";
 import _query from "../db/db.js";
-import { sessionChecker } from "../auth/sessionChecker.js";
+import { authGuard } from "../auth/guard.js";
 
 const router = Router();
 
-router.get("/", sessionChecker, (req, res) => {
+router.get("/", authGuard, (req, res) => {
     res.send({
         msg: "Hello"
     })

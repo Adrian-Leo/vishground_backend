@@ -1,9 +1,8 @@
 import { Router } from "express";
-const router = Router();
 import passport from "../auth/passport.js";
-import db from "../db/db.js";
 import logger from "../tools/logging.js";
 
+const router = Router();
 const { SERVER_BASE_URL } = process.env;
 const baseUrl = `${SERVER_BASE_URL}auth`;
 

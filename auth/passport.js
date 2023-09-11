@@ -1,9 +1,9 @@
 import { Strategy } from "passport-google-oauth20";
-import dotenv from "dotenv";
-import passport from "passport";
-import db from "../db/db.js";
 import logger from "../tools/logging.js";
 import paseto from "./paseto.js";
+import passport from "passport";
+import dotenv from "dotenv";
+import db from "../db/db.js";
 
 const { Strategy: GoogleStrategy } = Strategy;
 

@@ -13,7 +13,7 @@ import auth from "./routes/auth.js"
 import hello from "./routes/hello.js";
 import coor from "./routes/coordinate.js"
 import node from "./routes/node.js"
-import sessionError from "./auth/sessionChecker.js"
+import authError from "./auth/guard.js"
 import central from "./routes/central.js"
 import logger, { customLogFormat } from './tools/logging.js';
 
@@ -62,7 +62,7 @@ app.use(helmet());
 app.use(xss());
 app.use(cors());
 
-// use the router
+// use the route
 app.get("/", (req, res) => {
   res.send("WELCOME TO VISHGROUND API🚀");
 });
@@ -71,12 +71,12 @@ app.use("/hello", hello)
 app.use("/coor", coor)
 app.use("/node", node)
 app.use("/central", central)
-app.use(sessionError)
+app.use(authError);
 
 // start the server
 const port = process.env.PORT || 5001;
 app.listen(port, () => {
-  logger.info(`App is listening on port ${port}`);
+  logger.info(`🚀 Server is running on port ${port}`);
 });
 
 

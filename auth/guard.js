@@ -5,20 +5,24 @@ const router = express.Router();
 
 const { SERVER_BASE_URL } = process.env;
 
-const sessionChecker = (req, res, next) => {
+const authGuard = (req, res, next) => {
   // Check if the user has a valid session
   if (req.session && req.session.passport && req.session.passport.user) {
     const token = req.session.passport.user;
     paseto
       .verifyToken(token)
-      .then(() => {
-        logger.info("Token valid")
+      .then((payload) => {
+        if (payload.google_id != req.user.google_id) {
+          logger.error("Invalid token");
+          res.redirect(SERVER_BASE_URL + "sessionError");
+        }
+        logger.info("Valid token")
         next();
       })
       .catch((error) => {
         // Token verification failed, or the token has expired
         logger.error(error);
-        res.redirect(SERVER_BASE_URL + "/sessionError");
+        res.redirect(SERVER_BASE_URL + "sessionError");
       });
   } else {
     logger.error("No valid session found");
@@ -34,4 +38,4 @@ router.get("/sessionError", (req, res) => {
 });
 
 export default router;
-export { sessionChecker };
+export { authGuard };

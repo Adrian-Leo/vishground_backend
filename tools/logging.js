@@ -2,7 +2,7 @@ import chalk from "chalk";
 import morgan from "morgan";
 
 morgan.token('customMessage', (req, res) => {
-  return req.customLogMessage; // Assuming you attach your custom message to the request object
+  return req.customLogMessage; 
 });
 
 const customLogFormat = (tokens, req, res) => {
@@ -12,7 +12,6 @@ const customLogFormat = (tokens, req, res) => {
   const status = tokens.status(req, res);
   const responseTime = tokens['response-time'](req, res);
 
-  // Define colors using chalk
   const timestampColor = chalk.gray(timestamp);
   const methodColor = status >= 400 ? chalk.red(method) : chalk.green(method);
   const urlColor = status >= 400 ? chalk.red(url) : chalk.green(url);
@@ -21,25 +20,23 @@ const customLogFormat = (tokens, req, res) => {
 
   const customMessage =  req.customLogMessage ? `| ${chalk.blue(req.customLogMessage)}` : '';
 
-  return `${timestampColor} | ${methodColor} ${urlColor} | ${statusColor} | ${responseTimeColor} ms ${customMessage}`;
+  return `VISH-${timestampColor} | ${methodColor} ${urlColor} | ${statusColor} | ${responseTimeColor} ms ${customMessage}`;
 };
 
-// Create a custom logger function that can be used for various messages
 const logger = {
   log: (message) => {
     const timestamp = new Date().toISOString();
-    console.log(`${chalk.gray(timestamp)} | ${chalk.green('LOG')} ${message}`);
+    console.log(`VISH-${chalk.gray(timestamp)} | ${chalk.green('LOG')} ${message}`);
   },
   error: (message) => {
     const timestamp = new Date().toISOString();
-    console.error(`${chalk.gray(timestamp)} | ${chalk.red('ERROR')} ${message}`);
+    console.error(`VISH-${chalk.gray(timestamp)} | ${chalk.red('ERROR')} ${message}`);
   },
   info: (message) => {
     const timestamp = new Date().toISOString();
-    console.info(`${chalk.gray(timestamp)} | ${chalk.blue('INFO')} ${message}`);
+    console.info(`VISH-${chalk.gray(timestamp)} | ${chalk.blue('INFO')} ${message}`);
   },
 };
-
 
 export default logger;
 export { customLogFormat };

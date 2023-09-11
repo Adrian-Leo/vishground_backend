@@ -1,8 +1,8 @@
 import dotenv from "dotenv";
-import pkg from "pg";
+import pg from "pg";
 import logger from "../tools/logging.js";
 
-const { Client } = pkg;
+const { Client } = pg;
 dotenv.config({
   path: "local.env"
 });
@@ -17,8 +17,10 @@ var client = new Client({
 });
 
 client.connect((err) => {
+  const db = process.env.PG_DATABASE;
+  const port = process.env.PG_PORT;
   try {
-    logger.info("Connected to DB " + process.env.PG_DATABASE);
+    logger.info("🛢 Connected to DB " + db + " on port " + port);
   } catch (error) {
     logger.error(err);
     return;
