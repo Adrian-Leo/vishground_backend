@@ -2,9 +2,10 @@ import { Router } from "express";
 const router = Router();
 import passport from "../auth/passport.js";
 import db from "../db/db.js";
+import logger from "../tools/logging.js";
 
 const { SERVER_BASE_URL } = process.env;
-const baseUrl = `${SERVER_BASE_URL}/auth`;
+const baseUrl = `${SERVER_BASE_URL}auth`;
 
 router.get("/", (req, res) => {
   if (req.user) {
@@ -37,8 +38,8 @@ router.get("/login/success", (req, res) => {
   if (req.user) {
     res.status(200).json({
       success: true,
-      message: `Welcome ${req.user.username}!`,
-      uid: req.user.uid,
+      message: `Welcome ${req.user.display_name}!`,
+      id: req.user.google_id,
     });
   } else {
     res.status(401).json({
@@ -56,19 +57,19 @@ router.get("/login/failed", (req, res) => {
   });
 });
 
-// router.get("/logout", (req, res) => {
-//   req.logout((err) => {
-//     if (err) {
-//       res.status(500).send(err);
-//     } else {
-//       req.session.destroy();
-//       console.log("User logged out");
-//       res.status(200).json({
-//         success: true,
-//         message: "User logged out",
-//       });
-//     }
-//   });
-// });
+router.get("/logout", (req, res) => {
+  req.logout((err) => {
+    if (err) {
+      res.status(500).send(err);
+    } else {
+      req.session.destroy();
+      logger.info("User logged out");
+      res.status(200).json({
+        success: true,
+        message: "User logged out",
+      });
+    }
+  });
+});
 
 export default router;
