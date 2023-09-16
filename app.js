@@ -1,256 +1,89 @@
-const dotenv = require("dotenv");
-const express = require("express");
-const app = express();
-const cors = require("cors");
-const { Pool } = require("pg");
-const morgan = require("morgan");
-const helmet = require("helmet");
-const xss = require("xss-clean");
+import { config } from 'dotenv'
+import express from 'express'
+import session from 'express-session'
+import connect_pg from 'connect-pg-simple'
+import passport from 'passport'
+import db from './db/db.js'
+import cors from 'cors'
+import morgan from 'morgan'
+import helmet from 'helmet'
+import xss from 'xss-clean'
+import body_parser from 'body-parser'
+import auth from './routes/auth.js'
+import hello from './routes/hello.js'
+import coor from './routes/coordinate.js'
+import node from './routes/node.js'
+import authError from './auth/guard.js'
+import central from './routes/central.js'
+import logger, { customLogFormat } from './tools/logging.js'
 
-app.use(helmet());
-app.use(morgan("dev"));
+// dotenv
+config({
+  path: './local.env'
+})
 
-const bodyParser = require("body-parser");
-app.use(bodyParser.json());
+// pg for session
+const PostgresqlStore = connect_pg(session)
+// const sessionStore = new PostgresqlStore({
+//   pool: db,
+//   tableName: 'user_session'
+// })
 
-app.use(bodyParser.urlencoded({ extended: true }));
+// instantiation
+const app = express()
+const { urlencoded, json } = body_parser
 
+// installing middleware
 app.use(function (req, res, next) {
-  res.header("Access-Control-Allow-Origin", "*");
-  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-  res.header("Access-Control-Allow-Methods", "PUT,POST,GET,DELETE,PATCH,OPTIONS");
-  next();
-});
+  res.header('Access-Control-Allow-Origin', '*')
+  res.setHeader('Cross-Origin-Opener-Policy', 'same-origin')
+  res.setHeader('Cross-Origin-Embedder-Policy', 'require-corp')
+  res.header(
+    'Access-Control-Allow-Headers',
+    'Origin, X-Requested-With, Content-Type, Accept'
+  )
+  res.header(
+    'Access-Control-Allow-Methods',
+    'PUT,POST,GET,DELETE,PATCH,OPTIONS'
+  )
+  next()
+})
+// app.use(
+//   session({
+//     secret: process.env.COOKIE_SECRET,
+//     cookie: {
+//       maxAge: 1000 * 60 * 60 * 24 * 7, // 1 week
+//       secure: 'auto',
+//       sameSite: 'lax'
+//     },
+//     resave: true,
+//     saveUninitialized: true,
+//     store: sessionStore,
+//     credentials: true
+//   })
+// )
+// app.use(passport.initialize())
+// app.use(passport.session())
+app.use(urlencoded({ extended: true }))
+app.use(json())
+app.use(morgan(customLogFormat))
+app.use(helmet())
+app.use(xss())
+app.use(cors())
 
-dotenv.config({
-  path: "./config.env",
-});
+// use the route
+app.get('/', (req, res) => {
+  res.send('WELCOME TO VISHGROUND API🚀')
+})
+app.use('/auth', auth)
+app.use('/hello', hello)
+app.use('/coor', coor)
+app.use('/node', node)
+app.use('/central', central)
+app.use(authError)
 
-process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
-
-const { Client } = require("pg");
-
-var client = new Client({
-  user: process.env.PG_USER,
-  password: process.env.PG_PASSWORD,
-  database: process.env.PG_DATABASE,
-  port: process.env.PG_PORT,
-  host: process.env.PG_HOST,
-  ssl: process.env.PG_SSL,
-});
-client.connect();
-
-app.use(xss());
-app.use(cors());
-
-function truncatedTableNode() {
-  const query = `TRUNCATE TABLE coordinate`;
-
-  client.query(query, (err, res) => {
-    if (err) {
-      console.error(err.stack);
-    } else {
-      console.log("SUCCESFULLY TRUNCATED TABLE");
-    }
-  });
-}
-
-function truncatedTableSum() {
-  const query = `TRUNCATE TABLE sum_node`;
-
-  client.query(query, (err, res) => {
-    if (err) {
-      console.error(err.stack);
-    } else {
-      console.log("SUCCESFULLY TRUNCATED TABLE");
-    }
-  });
-}
-
-
-
-function insertSumNode(id, angka) {
-  const query = `INSERT INTO sum_node (id, angka)
-                 VALUES ($1, $2)
-                 ON CONFLICT (id) DO UPDATE
-                 SET angka = EXCLUDED.angka;`;
-
-  const values = [id, angka];
-
-  client.query(query, values, (err, res) => {
-    if (err) {
-      console.error(err.stack);
-    } else {
-      console.log("SUCCESSFULLY INSERTED OR UPDATED SUM NODE");
-    }
-  });
-}
-
-function insertDataCoordinate(node, latitude, longitude, coordinate) {
-  const query = `
-  INSERT INTO coordinate (node, latitude, longitude, coordinate)
-  VALUES ($1, $2, $3, $4)
-  ON CONFLICT (node) DO UPDATE
-  SET latitude = excluded.latitude,
-      longitude = excluded.longitude,
-      coordinate = excluded.coordinate
-`;
-
-  const values = [node, latitude, longitude, coordinate];
-
-  client.query(query, values, (err, res) => {
-    if (err) {
-      console.error(err.stack);
-    } else {
-      console.log("Successfully inserted data into coordinate table");
-    }
-  });
-}
-
-
-
-function getUpdatesCentral(callback) {
-  const query = "SELECT * FROM (SELECT *, ROW_NUMBER() OVER (ORDER BY id DESC) AS rn FROM sensor_central) subquery WHERE rn <= 20";
-
-  client.query(query, (err, result) => {
-    if (err) {
-      console.error(err);
-      callback([]);
-    } else {
-      const rows = result.rows;
-      callback(rows);
-    }
-  });
-}
-
-// function getUpdatesSumNode(callback) {
-//   const query = `SELECT * FROM sum_node`;
-
-//   client.query(query, (err, res) => {
-//     if (err) {
-//       console.error(err);
-//       callback([]);
-//     } else {
-//       const rows = res.rows;
-//       console.log(rows);
-//       callback(rows);
-//     }
-//   });
-// }
-
-function getUpdatesSumNode(callback) {
-  const query = `SELECT * FROM sum_node`;
-
-  client.query(query, (err, res) => {
-    if (err) {
-      console.error(err);
-      callback([]);
-    } else {
-      const rows = res.rows;
-      if(rows==null){
-        console.log("cekkk");
-      }
-      console.log(rows)
-      callback(rows);
-    }
-  });
-}
-
-// function getUpdatesCoordinate(node, callback) {
-//   const query = `SELECT * FROM coordinate WHERE node = $1`;
-//   const values = [node];
-
-//   client.query(query, values, (err, res) => {
-//     if (err) {
-//       console.error(err);
-//       callback([]);
-//     } else {
-//       const rows = res.rows;
-//       callback(rows);
-//     }
-//   });
-// }
-
-function getUpdatesCoordinate(node, callback) {
-  console.info("cekkk");
-  const query = `SELECT * FROM coordinate WHERE node = $1`;
-  const values = [node];
-
-  client.query(query, values, (err, res) => {
-    if (err) {
-      console.error(err);
-      callback([]);
-    } else {
-      const rows = res.rows;
-      if(rows==null){
-        console.info("mt");
-      }
-      console.info(rows)
-      callback(rows);
-    }
-  });
-}
-
-app.get("/updatesumnode", (req, res) => {
-  getUpdatesSumNode((rows) => {
-    res.send(rows);
-  });
-});
-
-app.get("/updatecentral", (req, res) => {
-  getUpdatesCentral((rows) => {
-    res.send(rows);
-  });
-});
-
-// app.get("/updatenode/:nodeId", (req, res) => {
-//   const { nodeId } = req.params;
-//   getUpdatesNode(nodeId, (rows) => {
-//     res.send(rows);
-//   });
-// });
-
-app.get("/updatecoordinate/:node", (req, res) => {
-  const { node } = req.params;
-  getUpdatesCoordinate(node, (rows) => {
-    res.send(rows);
-  });
-});
-
-app.post("/insertsumnode", (req, res) => {
-  insertSumNode(req.body.id, req.body.angka);
-  res.send("Data sum node inserted into the database");
-});
-
-app.post("/resetsum", (req, res) => {
-  truncatedTableSum();
-  res.send("Truncate Table Sum");
-});
-
-app.post("/resetcor", (req, res) => {
-  truncatedTableNode();
-  res.send("Truncate Table Sum");
-});
-
-// app.post("/insertnode", (req, res) => {
-//   insertDataNode(req.body.node, req.body.temperature, req.body.humidity, req.body.moisture, req.body.timestamp);
-//   res.send("Data node inserted into the database");
-// });
-
-app.post("/insertcentral", (req, res) => {
-  insertDataCentral(req.body.temperature, req.body.humidity, req.body.pressure, req.body.ozone, req.body.timestamp);
-  res.send("Data central inserted into the database");
-});
-
-app.post("/insertcoordinate", (req, res) => {
-  insertDataCoordinate(req.body.node, req.body.latitude, req.body.longitude, req.body.coordinate);
-  res.send("Data coordinate inserted into the database");
-});
-
-const port = process.env.PORT || 5001;
-
+// start the server
+const port = process.env.PORT || 5001
 app.listen(port, () => {
-  console.log(`App is listening on port ${port}`);
-});
-
-
+  logger.info(`🚀 Server is running on port ${port}`)
+})
